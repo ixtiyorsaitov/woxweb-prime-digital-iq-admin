@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "./auth-options";
 import { ROLE } from "@/types";
 import { IUser } from "@/types/user";
+import { authOptions } from "./auth-options";
 
 export const allowedRoles = [ROLE.ADMIN, ROLE.SUPERADMIN];
 

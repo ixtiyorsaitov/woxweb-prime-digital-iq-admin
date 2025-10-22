@@ -5,7 +5,25 @@ import {
   replyMessage,
   updateRepliedMessage,
 } from "@/lib/api/message";
-import { useMutation } from "@tanstack/react-query";
+import api from "@/lib/axios";
+import { useMutation, useQuery } from "@tanstack/react-query";
+
+export const useGetMessagesQuery = ({
+  page = 1,
+  limit = 10,
+}: {
+  page: number;
+  limit: number;
+}) => {
+  return useQuery({
+    queryKey: ["messages"],
+    queryFn: async () => {
+      const { data } = await api.get(`/messages?page=${page}&limit=${limit}`);
+
+      return data;
+    },
+  });
+};
 
 export const useReplyMessageMutation = () => {
   return useMutation({

@@ -1,6 +1,24 @@
 import { createAdmin, deleteAdmin, updateAdmin } from "@/lib/api/admin";
+import api from "@/lib/axios";
 import { ROLE } from "@/types";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+
+export const useGetAdminsQuery = ({
+  page = 1,
+  limit = 10,
+}: {
+  page: number;
+  limit: number;
+}) => {
+  return useQuery({
+    queryKey: ["admins"],
+    queryFn: async () => {
+      const { data } = await api.get(`/admins?page=${page}&limit=${limit}`);
+
+      return data;
+    },
+  });
+};
 
 export const useCreateAdminMutation = () => {
   return useMutation({

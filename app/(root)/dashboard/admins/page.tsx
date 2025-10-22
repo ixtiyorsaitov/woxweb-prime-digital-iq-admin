@@ -1,18 +1,21 @@
-import { getAdmins } from "@/lib/api/admin";
+"use client";
+
 import React from "react";
-import { toast } from "sonner";
 import AdminsPageMain from "./components";
+import Loading from "./loading";
+import ErrorPage from "@/app/error";
+import { useGetAdminsQuery } from "@/hooks/useAdmins";
 
 const limit = 10;
 
-const AdminsPage = async () => {
-  const resp = await getAdmins({
-    search: "",
+const AdminsPage = () => {
+  const { data: resp, isLoading } = useGetAdminsQuery({
     page: 1,
-    limit,
+    limit: 10,
   });
 
-  if (!resp.success) toast.error(resp.error);
+  if (isLoading) return <Loading />;
+  if (!isLoading && !resp.success) return <ErrorPage error={resp.error} />;
   return (
     <AdminsPageMain
       limit={limit}

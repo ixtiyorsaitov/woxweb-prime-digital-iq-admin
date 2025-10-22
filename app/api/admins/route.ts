@@ -5,49 +5,51 @@ import { ROLE } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  try {
-    await connectToDatabase();
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
 
-    // 🔹 query parametrlarini olish
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const search = searchParams.get("search")?.trim() || "";
+      // 🔹 query parametrlarini olish
+      const { searchParams } = new URL(request.url);
+      const page = parseInt(searchParams.get("page") || "1", 10);
+      const limit = parseInt(searchParams.get("limit") || "10", 10);
+      const search = searchParams.get("search")?.trim() || "";
 
-    // 🔹 qidiruv sharti (name yoki email bo‘yicha)
-    const searchQuery = search
-      ? {
-          $or: [
-            { name: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } },
-          ],
-        }
-      : {};
+      // 🔹 qidiruv sharti (name yoki email bo‘yicha)
+      const searchQuery = search
+        ? {
+            $or: [
+              { name: { $regex: search, $options: "i" } },
+              { email: { $regex: search, $options: "i" } },
+            ],
+          }
+        : {};
 
-    // 🔹 umumiy sonni olish
-    const total = await User.countDocuments(searchQuery);
+      // 🔹 umumiy sonni olish
+      const total = await User.countDocuments(searchQuery);
 
-    // 🔹 pagination uchun ma’lumotlarni olish
-    const users = await User.find(searchQuery)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit);
+      // 🔹 pagination uchun ma’lumotlarni olish
+      const users = await User.find(searchQuery)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit);
 
-    // 🔹 pagination meta
-    const pagination = {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-      hasNextPage: page * limit < total,
-      hasPrevPage: page > 1,
-    };
+      // 🔹 pagination meta
+      const pagination = {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1,
+      };
 
-    return NextResponse.json({ success: true, datas: users, pagination });
-  } catch (error) {
-    console.error("GET /users error:", error);
-    return NextResponse.json({ error: "Server xatoligi" }, { status: 500 });
-  }
+      return NextResponse.json({ success: true, datas: users, pagination });
+    } catch (error) {
+      console.error("GET /users error:", error);
+      return NextResponse.json({ error: "Server xatoligi" }, { status: 500 });
+    }
+  });
 }
 
 export async function POST(request: NextRequest) {

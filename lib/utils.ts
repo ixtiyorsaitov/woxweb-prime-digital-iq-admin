@@ -1,4 +1,4 @@
-import { PaginationType } from "@/types";
+import { PaginationType, ROLE } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -29,3 +29,5 @@ export const getPageNumbers = (pagination: PaginationType) => {
 
   return [1, "...", page - 1, page, page + 1, "...", totalPages];
 };
+
+export const allowedRoles: ROLE[] = [ROLE.ADMIN, ROLE.SUPERADMIN];
