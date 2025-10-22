@@ -14,14 +14,13 @@ export const transporter = nodemailer.createTransport({
 
 export const mailOptions = {
   from: email,
-  to: email,
 };
 
 export const sendEmail = async (repliedMsg: IMessage) => {
   try {
     const info = await transporter.sendMail({
-      ...mailOptions,
-
+      from: email,
+      to: repliedMsg.email,
       subject: `Salom ${repliedMsg.name}, sizning xabaringizga javob keldi!`,
       html: defaultHTML(repliedMsg),
     });

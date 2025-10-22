@@ -2,12 +2,9 @@ import { ROLE } from "@/types";
 import { z } from "zod";
 
 export const replyMessageSchema = z.object({
-  message: z
-    .string()
-    .min(2, {
-      message: "Xabar kamida 2 ta belgidan iborat bo'lishi kerak",
-    })
-    .max(50),
+  message: z.string().min(2, {
+    message: "Xabar kamida 2 ta belgidan iborat bo'lishi kerak",
+  }),
 });
 
 export const adminFormSchema = z.object({

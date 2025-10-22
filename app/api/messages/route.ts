@@ -3,6 +3,8 @@ import { connectToDatabase } from "@/lib/mongoose";
 import Message from "@/models/message.model";
 import { NextRequest, NextResponse } from "next/server";
 
+const allowedOrigin = process.env.ALLOWED_ORIGIN;
+
 export async function GET(request: NextRequest) {
   return adminOnly(async () => {
     try {
@@ -49,25 +51,74 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return adminOnly(async () => {
-    try {
-      await connectToDatabase();
-      const { name, email, message } = await request.json();
-      if (!name || !email || !message) {
-        return NextResponse.json({
-          error: "Barcha maydonlar to'ldirilishi kerak",
-        });
-      }
-      const newMessage = await Message.create({
-        name,
-        email,
-        message,
-      });
+  try {
+    const origin = request.headers.get("origin");
 
-      return NextResponse.json({ success: true, data: newMessage });
-    } catch (error) {
-      console.log(error);
-      return NextResponse.json({ error: "Server xatosi" });
+    if (origin !== allowedOrigin) {
+      return new NextResponse("CORS error: not allowed", {
+        status: 403,
+        headers: { "Access-Control-Allow-Origin": "null" },
+      });
     }
+
+    await connectToDatabase();
+    const { name, email, message } = await request.json();
+
+    if (!name || !email || !message) {
+      return NextResponse.json(
+        { error: "Barcha maydonlar to'ldirilishi kerak" },
+        {
+          status: 400,
+          headers: {
+            "Access-Control-Allow-Origin": allowedOrigin,
+          },
+        }
+      );
+    }
+
+    const newMessage = await Message.create({ name, email, message });
+
+    return NextResponse.json(
+      { success: true, data: newMessage },
+      {
+        status: 201,
+        headers: {
+          "Access-Control-Allow-Origin": allowedOrigin,
+        },
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json(
+      { error: "Server xatosi" },
+      {
+        status: 500,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        headers: {
+          "Access-Control-Allow-Origin": allowedOrigin,
+        },
+      }
+    );
+  }
+}
+
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin");
+
+  if (origin !== allowedOrigin) {
+    return new NextResponse("CORS error: not allowed", {
+      status: 403,
+      headers: { "Access-Control-Allow-Origin": "null" },
+    });
+  }
+
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": allowedOrigin,
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    },
   });
 }
